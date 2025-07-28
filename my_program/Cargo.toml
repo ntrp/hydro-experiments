@@ -1,0 +1,16 @@
+[package]
+name = "my_program"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.29.0", features = ["full"] }
+hydro_deploy_integration = { version = "0.13.0" }
+serde_json = "1.0.115"
+serde = { version = "1.0.197", features = ["derive"] }
+dfir_rs = { version = "0.13.0", features = ["deploy_integration"] }
+hydro_lang = { version = "0.13.2" }
+
+[[bin]]
+name = "my_program"
+path = "src/main.rs"

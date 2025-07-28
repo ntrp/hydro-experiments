@@ -1,0 +1,12 @@
+[package]
+name = "hydro_cli_app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hydro_deploy = { version = "0.13.0" }
+hydro_lang = { version = "0.13.2", features = ["deploy"] }
+tokio = { version = "1.29.0", features = ["full"] }
+anyhow = "1.0.82"
+futures = "0.3.30"
+
