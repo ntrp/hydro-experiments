@@ -8,13 +8,8 @@ use tokio::main;
 async fn main() {
     let mut ports = init::<()>().await;
 
-    let args: Vec<String> = std::env::args().collect();
-    let node_id = args.get(1).unwrap_or(&"unknown".to_string()).clone();
-
-    println!("Hello from worker on cluster node {}!", node_id);
-
     let mut master_input = ports
-        .port("server")
+        .port("main")
         .connect::<ConnectedDirect>()
         .into_source();
 

@@ -1,0 +1,9 @@
+[package]
+name = "hydro_cli_app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+hydro_deploy = { git = "https://github.com/hydro-project/hydro.git", branch = "main" }
+hydro_lang = { git = "https://github.com/hydro-project/hydro.git", branch = "main", features = ["deploy"] }
