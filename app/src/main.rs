@@ -1,25 +1,40 @@
-use hydro_deploy::{Deployment, LocalhostHost, RustCrate};
-use hydro_lang::{Cluster, FlowBuilder};
-use tokio::main;
 use std::sync::Arc;
+use hydro_deploy::{Deployment, RustCrate};
+use hydro_deploy::rust_crate::ports::RustCrateSink;
+use hydro_lang::deploy::{DeployClusterSpec, TrybuildHost};
+use hydro_lang::{Cluster, FlowBuilder};
 
-#[main]
+#[tokio::main]
 async fn main() {
     let mut deployment = Deployment::new();
 
     let builder = FlowBuilder::new();
     let cluster: Cluster<()> = builder.cluster();
 
-    let localhost_hosts: Vec<Arc<LocalhostHost>> = (0..2).map(|id| deployment.add_host(|_| LocalhostHost::new(id))).collect();
+    let server = RustCrate::new("server", deployment.Localhost().clone());
+    let worker = RustCrate::new("worker", deployment.Localhost().clone());
 
-    let service = deployment.add_service(RustCrate::new("worker", localhost_hosts[0].clone()));
+    // let workers: Vec<_> = (0..2)
+    //     .map(|_| { RustCrate::new("worker", deployment.Localhost().clone()) })
+    //     .collect();
 
+    let server_service = deployment.add_service(server);
+    let worker_service = deployment.add_service(worker);
+    let worker_lock = worker_service.try_read().expect("read lock worker");
+    let port = worker_lock
+        .get_port("echo".to_string(), &worker_service);
+    server_service
+        .try_write()
+        .expect("write lock server")
+        .add_connection(&worker_service, "echo".to_string(), &port)
+        .expect("add connection");
 
     let _nodes = builder
         .with_default_optimize()
-        .with_cluster(&cluster, localhost_hosts.clone().into_iter())
+        // .with_process(&server, TrybuildHost::new(server))
+        // .with_cluster(&cluster, DeployClusterSpec::new(workers))
+        .with_cluster(&cluster, vec![deployment.Localhost()])
         .deploy(&mut deployment);
 
-    let _ = deployment.deploy().await;
-    let _ = deployment.start().await;
+    deployment.run_ctrl_c().await.unwrap();
 }
