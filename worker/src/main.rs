@@ -6,13 +6,15 @@ use dfir_rs::{
 #[dfir_rs::main]
 async fn main() {
     let ports = init::<()>().await;
-    let echo_recv = ports
-        .port("echo")
+    let server = ports
+        .port("from_server")
         .connect::<ConnectedDirect>()
         .into_source();
 
+    println!("Worker started, waiting for messages...");
+
     let df = dfir_syntax! {
-        source_stream(echo_recv) ->
+        source_stream(server) ->
             map(|x| String::from_utf8(x.unwrap().to_vec()).unwrap()) ->
             for_each(|x| println!("echo {:?}", x));
     };
